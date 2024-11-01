@@ -1,3 +1,5 @@
+![Dojo Starter](./assets/cover.png)
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/mark-dark.svg">
   <img alt="Dojo logo" align="right" width="120" src=".github/mark-light.svg">
@@ -18,9 +20,9 @@
 
 # Dojo Starter: Official Guide
 
-The official Dojo Starter guide, the quickest and most streamlined way to get your Dojo provable game up and running. This guide will assist you with the initial setup, from cloning the repository to deploying your world.
+A quickstart guide to help you build and deploy your first Dojo provable game.
 
-Read the full tutorial [here](https://book.dojoengine.org/tutorial/dojo-starter).
+Read the full tutorial [here](https://dojoengine.org/tutorial/dojo-starter).
 
 ## Running Locally
 
@@ -41,24 +43,23 @@ sozo build
 sozo migrate apply
 
 # Start Torii
-torii --world 0x128bda34ac94a34dc53ea0ee024649f80ace13312a7dacdc9d541e6d4165ac1 --allowed-origins "*"
+# Replace <WORLD_ADDRESS> with the address of the deployed world from the previous step
+torii --world <WORLD_ADDRESS> --allowed-origins "*"
 ```
 
 ---
 
 ## Contribution
 
-This starter project is a constant work in progress and contributions are greatly appreciated!
-
 1. **Report a Bug**
 
-   - If you think you have encountered a bug, and we should know about it, feel free to report it [here](https://github.com/dojoengine/dojo-starter/issues) and we will take care of it.
+    - If you think you have encountered a bug, and we should know about it, feel free to report it [here](https://github.com/dojoengine/dojo-starter/issues) and we will take care of it.
 
 2. **Request a Feature**
 
-   - You can also request for a feature [here](https://github.com/dojoengine/dojo-starter/issues), and if it's viable, it will be picked for development.
+    - You can also request for a feature [here](https://github.com/dojoengine/dojo-starter/issues), and if it's viable, it will be picked for development.
 
 3. **Create a Pull Request**
-   - It can't get better then this, your pull request will be appreciated by the community.
+    - It can't get better then this, your pull request will be appreciated by the community.
 
 Happy coding!

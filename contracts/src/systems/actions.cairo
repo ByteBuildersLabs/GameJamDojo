@@ -1,77 +1,127 @@
-// Starknet imports
+use dojo_starter::models::Beast;
 
-use starknet::ContractAddress;
-
-// Dojo imports
-
-use dojo::world::IWorldDispatcher;
-
-// Interfaces
-
+// define the interface
 #[starknet::interface]
-trait IActions<TContractState> {
-    fn spawn(self: @TContractState, name: felt252, role: u8);
-    fn move(self: @TContractState, direction: u8);
-    fn attack(self: @TContractState);
-    fn heal(self: @TContractState, quantity: u8);
+trait IActions<T> {
+    fn spawn(ref self: T);
+    fn feed(ref self: T);
+    fn sleep(ref self: T);
+    fn play(ref self: T);
+    fn clean(ref self: T);
 }
 
-// Contracts
-
+// dojo decorator
 #[dojo::contract]
-mod actions {
-    // Component imports
-
-    use rpg::components::playable::PlayableComponent;
-
-    // Internal imports
-
-    use rpg::types::mode::Mode;
-
-    // Local imports
-
-    use super::IActions;
-
-    // Components
-
-    component!(path: PlayableComponent, storage: playable, event: PlayableEvent);
-    impl PlayableInternalImpl = PlayableComponent::InternalImpl<ContractState>;
-
-    // Storage
-
-    #[storage]
-    struct Storage {
-        #[substorage(v0)]
-        playable: PlayableComponent::Storage,
-    }
-
-    // Events
-
-    #[event]
-    #[derive(Drop, starknet::Event)]
-    enum Event {
-        #[flat]
-        PlayableEvent: PlayableComponent::Event,
-    }
-
-    // Implementations
+pub mod actions {
+    use super::{IActions};
+    use starknet::{ContractAddress, get_caller_address};
+    use dojo_starter::models::{Beast};
 
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
-        fn spawn(self: @ContractState, name: felt252, role: u8) {
-            self.playable.spawn(self.world(), name, role, Mode::Medium.into())
+        fn spawn(ref self: ContractState) {
+            let initial_stats = Beast {
+                player: get_caller_address(),
+                life: 10,
+                max_life: 10,
+                hungry: 10,
+                max_hungry: 10,
+                energy: 10,
+                max_energy: 10,
+                happiness: 10,
+                max_happiness: 10,
+                bath: 10,
+                max_bath: 10,
+                level: 1,
+                experience: 0,
+                next_level_experience: 10,
+            };
+            self.world(@"dojo_starter").write_model(@initial_stats);
         }
 
-        fn move(self: @ContractState, direction: u8) {
-            self.playable.move(self.world(), direction)
+        // Disminuye las estadísticas automáticamente
+        fn decrease_stats(ref self: ContractState) {
+            let mut world = self.world(@"dojo_starter");
+            let player = get_caller_address();
+            let mut beast: Beast = world.read_model(player);
+
+            if beast.life > 0 {
+                beast.hungry = u32::max(0, beast.hungry - 2);
+                beast.energy = u32::max(0, beast.energy - 1);
+                beast.happiness = u32::max(0, beast.happiness - 1);
+                beast.bath = u32::max(0, beast.bath - 1);
+
+                if beast.hungry == 0
+                    || beast.energy == 0
+                    || beast.happiness == 0
+                    || beast.bath == 0 {
+                    beast.life = u32::max(0, beast.life - 5);
+                }
+
+                world.write_model(@beast);
+            }
         }
 
-        fn attack(self: @ContractState) {
-            self.playable.attack(self.world())
+        // Alimentar
+        fn feed(ref self: ContractState) {
+            let mut world = self.world(@"dojo_starter");
+            let player = get_caller_address();
+            let mut beast: Beast = world.read_model(player);
+
+            if beast.life > 0 {
+                beast.hungry = u32::min(beast.max_hungry, beast.hungry + 30);
+                beast.energy = u32::min(beast.max_energy, beast.energy + 10);
+                world.write_model(@beast);
+            }
         }
 
-        fn heal(self: @ContractState, quantity: u8) {
-            self.playable.heal(self.world(), quantity)
+        // Dormir
+        fn sleep(ref self: ContractState) {
+            let mut world = self.world(@"dojo_starter");
+            let player = get_caller_address();
+            let mut beast: Beast = world.read_model(player);
+
+            if beast.life > 0 {
+                beast.energy = u32::min(beast.max_energy, beast.energy + 40);
+                beast.happiness = u32::min(beast.max_happiness, beast.happiness + 10);
+                world.write_model(@beast);
+            }
+        }
+
+        // Jugar
+        fn play(ref self: ContractState) {
+            let mut world = self.world(@"dojo_starter");
+            let player = get_caller_address();
+            let mut beast: Beast = world.read_model(player);
+
+            if beast.life > 0 {
+                beast.happiness = u32::min(beast.max_happiness, beast.happiness + 30);
+                beast.energy = u32::max(0, beast.energy - 20);
+                beast.hungry = u32::max(0, beast.hungry - 10);
+                beast.experience += 10;
+
+                // Subir de nivel si la experiencia excede el límite
+                if beast.experience >= beast.next_level_experience {
+                    beast.level += 1;
+                    beast.experience = 0;
+                    beast.next_level_experience += 100;
+                }
+
+                world.write_model(@beast);
+            }
+        }
+
+        // Limpiar
+        fn clean(ref self: ContractState) {
+            let mut world = self.world(@"dojo_starter");
+            let player = get_caller_address();
+            let mut beast: Beast = world.read_model(player);
+
+            if beast.life > 0 {
+                beast.bath = u32::min(beast.max_bath, beast.bath + 40);
+                beast.happiness = u32::min(beast.max_happiness, beast.happiness + 10);
+                world.write_model(@beast);
+            }
         }
     }
 }
