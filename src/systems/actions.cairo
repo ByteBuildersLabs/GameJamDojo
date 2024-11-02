@@ -54,14 +54,11 @@ pub mod actions {
             let mut beast: Beast = world.read_model(player);
 
             if beast.life > 0 {
-                beast.hungry = beast.hungry - 5;
-                beast.energy = beast.energy - 3;
-                beast.happiness = beast.happiness - 2;
-                beast.bath = beast.bath - 2;
-
-                if beast.hungry == 0 || beast.energy == 0 || beast.happiness == 0 || beast.bath == 0 {
-                    beast.life = beast.life - 5;
-                }
+                beast.hungry = 5;
+                beast.energy = 3;
+                beast.happiness = 2;
+                beast.bath = 2;
+                beast.life = 5;
 
                 world.write_model(@beast);
             }
